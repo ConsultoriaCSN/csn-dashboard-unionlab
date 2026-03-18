@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNIONLAB · DRE Gerencial 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:        #F4F1EB;
+  --bg2:       #EAE6DC;
+  --surface:   #FFFFFF;
+  --surface2:  #FDFCF8;
+  --border:    #E0DBD0;
+  --border2:   #CAC4B4;
+  --gold:      #A8832A;
+  --gold-l:    #C9A84C;
+  --gold-xl:   #E8C97A;
+  --gold-bg:   #FAF6EA;
+  --gold-bdr:  rgba(168,131,42,0.3);
+  --text:      #1E1B15;
+  --text2:     #5C5648;
+  --text3:     #9A9282;
+  --green:     #1A6B3C;
+  --green-bg:  #E8F5EE;
+  --red:       #B83232;
+  --red-bg:    #FAEAEA;
+  --blue:      #1D4ED8;
+  --shadow-sm: 0 1px 3px rgba(30,27,21,0.07);
+  --shadow:    0 2px 8px rgba(30,27,21,0.09);
+  --shadow-lg: 0 8px 32px rgba(30,27,21,0.12);
+  --r:4px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:13px;min-height:100vh;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* ═══ LOGIN ═══ */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  background-image:
+    radial-gradient(ellipse 60% 50% at 20% 80%, rgba(168,131,42,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 20%, rgba(168,131,42,0.06) 0%, transparent 60%);
+}
+.login-wrap{display:flex;gap:0;width:880px;background:var(--surface);border-radius:8px;overflow:hidden;box-shadow:var(--shadow-lg);border:1px solid var(--border);}
+.login-left{
+  flex:1;background:linear-gradient(160deg,#1E1B15 0%,#2C2519 60%,#1A1510 100%);
+  padding:56px 44px;display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;
+}
+.login-left::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 30% 40%, rgba(168,131,42,0.15) 0%, transparent 70%);
+}
+.ll-logo{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;color:var(--gold-xl);letter-spacing:5px;position:relative;}
+.ll-tagline{font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;position:relative;}
+.ll-desc{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.7;position:relative;margin-top:24px;}
+.ll-credits{font-size:10px;color:rgba(168,131,42,0.6);letter-spacing:1.5px;position:relative;}
+.login-right{width:360px;padding:48px 40px;display:flex;flex-direction:column;justify-content:center;}
+.lr-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.lr-sub{font-size:11px;color:var(--text3);letter-spacing:.5px;margin-bottom:32px;}
+.f-label{font-size:10px;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;display:block;margin-bottom:5px;margin-top:18px;}
+.f-input{
+  width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);
+  padding:11px 14px;border-radius:var(--r);font-family:'Outfit',sans-serif;font-size:13px;
+  outline:none;transition:border .2s,box-shadow .2s;
+}
+.f-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(168,131,42,0.08);}
+.login-btn{
+  width:100%;margin-top:28px;background:var(--gold);color:#fff;border:none;
+  padding:13px;border-radius:var(--r);font-family:'Outfit',sans-serif;font-size:13px;
+  font-weight:600;letter-spacing:.8px;cursor:pointer;transition:all .2s;
+}
+.login-btn:hover{background:var(--gold-l);transform:translateY(-1px);box-shadow:0 4px 12px rgba(168,131,42,0.3);}
+.login-err{color:var(--red);font-size:11px;margin-top:8px;min-height:16px;text-align:center;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.login-wrap{animation:fadeUp .5s ease;}
+
+/* ═══ APP ═══ */
+#app{display:none;}
+
+/* ═══ TOPBAR ═══ */
+.topbar{
+  height:56px;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 28px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:300;box-shadow:var(--shadow-sm);
+}
+.tb-left{display:flex;align-items:center;gap:16px;}
+.tb-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--gold);letter-spacing:3px;}
+.tb-sep{width:1px;height:22px;background:var(--border);}
+.tb-breadcrumb{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);}
+.tb-crumb-active{color:var(--gold);font-weight:600;}
+.tb-right{display:flex;align-items:center;gap:12px;}
+.chip-user{
+  display:flex;align-items:center;gap:7px;
+  background:var(--gold-bg);border:1px solid var(--gold-bdr);border-radius:20px;
+  padding:5px 14px 5px 10px;font-size:11px;color:var(--gold);font-weight:600;
+}
+.chip-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);}
+.btn-xs{
+  background:none;border:1px solid var(--border2);color:var(--text2);
+  padding:5px 13px;border-radius:var(--r);font-size:11px;font-family:'Outfit',sans-serif;
+  cursor:pointer;transition:all .2s;
+}
+.btn-xs:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ═══ AREA BAR ═══ */
+.area-bar{
+  height:44px;background:var(--surface);border-bottom:2px solid var(--border);
+  padding:0 28px;display:flex;align-items:center;gap:2px;
+  position:sticky;top:56px;z-index:290;
+}
+.area-tab{
+  height:100%;padding:0 18px;background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--text3);font-family:'Outfit',sans-serif;font-size:11px;font-weight:500;
+  letter-spacing:.8px;text-transform:uppercase;cursor:pointer;transition:all .2s;
+  margin-bottom:-2px;
+}
+.area-tab:hover{color:var(--text);}
+.area-tab.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:700;}
+
+/* ═══ SEC TABS ═══ */
+.sec-bar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 28px;display:flex;align-items:center;gap:2px;
+  position:sticky;top:100px;z-index:280;
+}
+.sec-tab{
+  background:none;border:none;border-bottom:2px solid transparent;
+  color:var(--text3);padding:10px 16px;font-family:'Outfit',sans-serif;
+  font-size:11px;font-weight:500;letter-spacing:.5px;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;gap:6px;
+}
+.sec-tab:hover{color:var(--text);}
+.sec-tab.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:700;}
+.sec-icon{font-size:13px;}
+
+/* ═══ FILTER BAR ═══ */
+.filter-bar{
+  background:var(--bg);border-bottom:1px solid var(--border);
+  padding:8px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  position:sticky;top:143px;z-index:270;
+}
+.fl-label{font-size:9px;color:var(--text3);letter-spacing:1.3px;text-transform:uppercase;white-space:nowrap;}
+.month-wrap{display:flex;gap:3px;flex-wrap:wrap;}
+.mpill{
+  background:var(--surface);border:1px solid var(--border);color:var(--text2);
+  padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;
+  cursor:pointer;transition:all .15s;user-select:none;
+}
+.mpill:hover{border-color:var(--gold-l);color:var(--gold);}
+.mpill.on{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:700;}
+.mpill-all{
+  background:none;border:1px solid var(--border2);color:var(--text3);
+  padding:3px 10px;border-radius:20px;font-size:11px;cursor:pointer;transition:all .15s;
+}
+.mpill-all:hover{border-color:var(--gold);}
+.fl-sep{width:1px;height:18px;background:var(--border);margin:0 4px;}
+.upload-btn{
+  margin-left:auto;display:flex;align-items:center;gap:7px;
+  background:var(--surface);border:1px dashed var(--border2);border-radius:var(--r);
+  padding:5px 14px;cursor:pointer;font-size:11px;color:var(--text2);transition:all .2s;
+  font-family:'Outfit',sans-serif;
+}
+.upload-btn:hover{border-color:var(--gold);color:var(--gold);}
+#file-input{display:none;}
+.upload-ok{font-size:10px;color:var(--green);font-weight:700;display:none;}
+
+/* ═══ CONTENT ═══ */
+.content{padding:24px 28px;max-width:1800px;margin:0 auto;}
+
+/* ═══ KPI STRIP ═══ */
+.kpi-strip{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:20px;
+}
+@media(max-width:1200px){.kpi-strip{grid-template-columns:repeat(4,1fr);}}
+.kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:6px;
+  padding:18px 20px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);
+  transition:box-shadow .2s,transform .2s;
+}
+.kpi:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
+.kpi-top-bar{position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi-top-bar.gold{background:linear-gradient(90deg,var(--gold) 0%,var(--gold-xl) 100%);}
+.kpi-top-bar.green{background:linear-gradient(90deg,var(--green) 0%,#4ade80 100%);}
+.kpi-top-bar.red{background:linear-gradient(90deg,var(--red) 0%,#f87171 100%);}
+.kpi-top-bar.blue{background:linear-gradient(90deg,var(--blue) 0%,#60a5fa 100%);}
+.kpi-top-bar.neutral{background:linear-gradient(90deg,var(--text3) 0%,var(--border2) 100%);}
+.kpi-label{font-size:9px;color:var(--text3);letter-spacing:1.4px;text-transform:uppercase;margin-bottom:8px;font-weight:500;}
+.kpi-value{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-0.5px;}
+.kpi-badge{
+  display:inline-flex;align-items:center;gap:3px;margin-top:8px;
+  padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.2px;
+}
+.bg-pos{background:var(--green-bg);color:var(--green);}
+.bg-neg{background:var(--red-bg);color:var(--red);}
+.bg-gold{background:var(--gold-bg);color:var(--gold);}
+.bg-neu{background:var(--bg2);color:var(--text2);}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:4px;}
+
+/* ═══ LEITURAS ═══ */
+.leituras-card{
+  background:linear-gradient(135deg,#FAF6EA 0%,#F4EFD8 100%);
+  border:1px solid var(--gold-bdr);border-radius:6px;
+  padding:18px 24px;margin-bottom:20px;
+  display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:20px;align-items:start;
+  box-shadow:var(--shadow-sm);
+}
+.leit-tag{
+  font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;
+  color:var(--gold);letter-spacing:.5px;white-space:nowrap;padding-top:1px;
+  border-right:1px solid var(--gold-bdr);padding-right:20px;
+}
+.leit-item{}
+.leit-title{font-size:11px;font-weight:700;color:var(--text);margin-bottom:3px;letter-spacing:.2px;}
+.leit-body{font-size:11px;color:var(--text2);line-height:1.6;}
+
+/* ═══ CHARTS ═══ */
+.charts-main{display:grid;grid-template-columns:3fr 1fr;gap:14px;margin-bottom:14px;}
+.charts-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:var(--shadow-sm);}
+.panel-hdr{
+  padding:13px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-title{font-size:10px;font-weight:700;color:var(--text2);letter-spacing:1.2px;text-transform:uppercase;}
+.panel-tag{font-size:9px;padding:2px 8px;border-radius:20px;}
+.panel-body{padding:16px 18px;}
+.ch-wrap{height:220px;position:relative;}
+.ch-wrap-sm{height:170px;position:relative;}
+
+/* ═══ DRE ═══ */
+.dre-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.dre-h-left{display:flex;align-items:center;gap:10px;}
+.dre-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--text);}
+.dre-period{font-size:11px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);padding:3px 10px;border-radius:20px;}
+.dre-h-right{display:flex;align-items:center;gap:8px;}
+.btn-flat{
+  background:none;border:1px solid var(--border2);color:var(--text2);
+  padding:6px 13px;border-radius:var(--r);font-size:11px;font-family:'Outfit',sans-serif;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-weight:500;
+}
+.btn-flat:hover{border-color:var(--gold);color:var(--gold);}
+.btn-gold{
+  background:var(--gold);color:#fff;border:none;
+  padding:6px 14px;border-radius:var(--r);font-size:11px;font-weight:600;font-family:'Outfit',sans-serif;
+  cursor:pointer;transition:all .2s;
+}
+.btn-gold:hover{background:var(--gold-l);}
+
+/* DRE TABLE */
+.dre-outer{border-radius:6px;border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);}
+.dre-scroll{overflow-x:auto;}
+.dre-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+
+/* HEADER ROWS */
+.dre-table thead tr:first-child th{
+  background:#1E1B15;color:rgba(255,255,255,0.5);font-size:9px;
+  letter-spacing:1px;text-transform:uppercase;font-weight:600;
+  padding:8px 14px;text-align:center;border-right:1px solid rgba(255,255,255,0.07);
+}
+.dre-table thead tr:first-child th:first-child{text-align:left;min-width:340px;}
+.dre-table thead tr:second-child{background:#2C2821;}
+.dre-table thead tr:nth-child(2) th{
+  background:#2C2821;color:rgba(255,255,255,0.45);font-size:9px;
+  font-weight:500;padding:5px 14px;text-align:right;
+  border-right:1px solid rgba(255,255,255,0.06);border-bottom:2px solid var(--gold);
+}
+.dre-table thead tr:nth-child(2) th:first-child{text-align:left;}
+.acum-head th{background:#1A160F!important;color:rgba(201,168,76,0.8)!important;}
+
+/* DATA ROWS */
+.dre-table td{
+  padding:0 14px;text-align:right;vertical-align:middle;border-bottom:1px solid #F2EFE8;
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.dre-table td:first-child{text-align:left;}
+
+/* LV1 */
+.dre-table tr.lv1 td{background:#F7F4EE;height:38px;font-weight:700;font-size:12.5px;color:var(--text);border-bottom:1px solid var(--border);}
+.dre-table tr.lv1.result-row td{
+  background:linear-gradient(90deg,#FAF6EA,#F5F0DA);
+  color:var(--gold);font-size:13px;font-weight:700;
+  border-top:2px solid var(--gold-bdr);border-bottom:2px solid var(--gold-bdr);height:42px;
+}
+/* LV2 */
+.dre-table tr.lv2 td{background:#FDFCF9;height:34px;font-weight:600;font-size:12px;color:var(--text2);border-bottom:1px solid #EDEAE2;}
+.dre-table tr.lv2 td:first-child{padding-left:28px;}
+/* LV3 */
+.dre-table tr.lv3 td{background:#FDFBF7;height:32px;font-weight:400;font-size:12px;color:var(--text2);border-bottom:1px solid #F0EDE5;}
+.dre-table tr.lv3 td:first-child{padding-left:48px;}
+/* LV4 */
+.dre-table tr.lv4 td{background:var(--surface2);height:30px;font-weight:400;font-size:11.5px;color:var(--text3);border-bottom:1px solid #F5F3EE;}
+.dre-table tr.lv4 td:first-child{padding-left:66px;}
+
+.dre-table tr:hover td{background:#F5F1E5!important;}
+.dre-table tr.result-row:hover td{background:linear-gradient(90deg,#F5F0D8,#EDE8C8)!important;}
+
+/* ACCOUNT CODE */
+.acc-code{
+  display:inline-block;font-size:9.5px;font-weight:600;color:var(--gold);
+  background:var(--gold-bg);border:1px solid rgba(168,131,42,0.2);
+  border-radius:3px;padding:1px 5px;margin-right:7px;letter-spacing:.3px;
+  font-family:'Outfit',sans-serif;vertical-align:middle;white-space:nowrap;
+}
+.toggle-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;border-radius:3px;
+  background:none;border:1px solid var(--border2);
+  color:var(--text3);font-size:10px;cursor:pointer;
+  margin-right:7px;transition:all .15s;flex-shrink:0;vertical-align:middle;
+}
+.toggle-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
+.spacer-icon{display:inline-block;width:16px;height:16px;margin-right:7px;vertical-align:middle;}
+.cell-label{display:inline-flex;align-items:center;vertical-align:middle;}
+
+/* VALUE CELLS */
+.v-pos{color:var(--green);}
+.v-neg{color:var(--red);}
+.v-dash{color:var(--border2);}
+.pct-wrap{display:flex;align-items:center;gap:6px;justify-content:flex-end;}
+.pct-bar{display:inline-block;height:3px;border-radius:2px;background:var(--gold);}
+.desv-pos{color:var(--green);font-weight:600;}
+.desv-neg{color:var(--red);font-weight:600;}
+
+/* STICKY FIRST COL */
+.dre-table td:first-child,.dre-table th:first-child{
+  position:sticky;left:0;z-index:1;
+}
+.dre-table tr.lv1 td:first-child{background:#F7F4EE;}
+.dre-table tr.lv1.result-row td:first-child{background:#FAF6EA;}
+.dre-table tr.lv2 td:first-child{background:#FDFCF9;}
+.dre-table tr.lv3 td:first-child{background:#FDFBF7;}
+.dre-table tr.lv4 td:first-child{background:var(--surface2);}
+
+/* ACUM COLS */
+.col-acum{background:#FDFAF0!important;color:var(--gold)!important;font-weight:700!important;}
+.col-acum-orc{background:#FAF8F2!important;color:var(--text2)!important;}
+.col-desv{}
+.col-pct{min-width:110px;}
+
+/* ═══ RAZÃO ═══ */
+.razao-filter-grid{
+  display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr auto auto;
+  gap:10px;margin-bottom:16px;align-items:end;
+}
+@media(max-width:1100px){.razao-filter-grid{grid-template-columns:1fr 1fr 1fr;}}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-weight:600;}
+.fg input,.fg select{
+  background:var(--surface);border:1px solid var(--border2);color:var(--text);
+  padding:8px 12px;border-radius:var(--r);font-family:'Outfit',sans-serif;font-size:12px;
+  outline:none;transition:border .2s;
+}
+.fg input:focus,.fg select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(168,131,42,0.08);}
+
+.razao-info{font-size:11px;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.razao-outer{border-radius:6px;border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);}
+.razao-scroll{overflow-x:auto;}
+.razao-table{width:100%;border-collapse:collapse;font-size:12px;}
+.razao-table thead th{
+  background:#1E1B15;color:rgba(255,255,255,0.55);font-size:10px;font-weight:600;
+  letter-spacing:.8px;text-transform:uppercase;padding:10px 14px;
+  border-right:1px solid rgba(255,255,255,0.06);white-space:nowrap;text-align:left;
+}
+.razao-table thead th.r{text-align:right;}
+.razao-table td{
+  padding:9px 14px;border-bottom:1px solid #F0EDE5;color:var(--text);
+  vertical-align:top;
+}
+.razao-table td.r{text-align:right;white-space:nowrap;}
+.razao-table tr:hover td{background:#FDFAF5;}
+.razao-obs{font-size:12px;color:var(--text);max-width:340px;word-break:break-word;white-space:normal;line-height:1.5;}
+.razao-contra{font-size:12px;color:var(--text);max-width:240px;word-break:break-word;white-space:normal;line-height:1.5;}
+.div-chip{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
+.dc-opme{background:#FEF8EA;color:#9A6E00;}
+.dc-hosp{background:#E8F5EE;color:var(--green);}
+.dc-diag{background:#EEF2FB;color:var(--blue);}
+.dc-gen{background:var(--bg2);color:var(--text2);}
+.v-g{color:var(--green);font-weight:700;}
+.v-r{color:var(--red);font-weight:700;}
+.lanc-code{font-size:11px;font-weight:700;color:var(--text);display:block;}
+.lanc-type{font-size:10px;color:var(--text3);}
+.conta-code{font-size:10px;font-weight:700;color:var(--gold);display:block;}
+.conta-name{font-size:11px;color:var(--text2);}
+
+.razao-footer{display:flex;align-items:center;gap:12px;margin-top:10px;}
+.razao-footer span{font-size:11px;color:var(--text3);}
+
+/* TABS */
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+/* CSN FOOTER */
+.app-footer{
+  border-top:1px solid var(--border);margin-top:32px;padding:16px 28px;
+  background:var(--surface);display:flex;align-items:center;justify-content:space-between;
+}
+.footer-brand{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--gold);letter-spacing:1px;}
+.footer-info{font-size:10px;color:var(--text3);letter-spacing:.3px;}
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-left">
+      <div>
+        <div class="ll-logo">UNIONLAB</div>
+        <div class="ll-tagline">Sistema de Gestão Financeira · 2026</div>
+        <div class="ll-desc">
+          Painel gerencial integrado com DRE consolidada, análise por unidade de negócio
+          e detalhamento de lançamentos contábeis via SAP Business One.
+        </div>
+      </div>
+      <div class="ll-credits">CSN GESTÃO &amp; CONSULTORIA<br>caio@consultoriacsn.com.br</div>
+    </div>
+    <div class="login-right">
+      <div class="lr-title">Acesso ao Painel</div>
+      <div class="lr-sub">Insira suas credenciais para continuar</div>
+      <label class="f-label">Usuário</label>
+      <input class="f-input" id="inp-user" type="text" placeholder="seu.usuario" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+      <label class="f-label">Senha</label>
+      <input class="f-input" id="inp-pass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="login-err" id="login-err"></div>
+      <button class="login-btn" onclick="doLogin()">ENTRAR →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+  <div class="topbar">
+    <div class="tb-left">
+      <span class="tb-logo">UNIONLAB</span>
+      <div class="tb-sep"></div>
+      <div class="tb-breadcrumb">
+        <span>DRE Gerencial</span>
+        <span>›</span>
+        <span class="tb-crumb-active" id="tb-unit">Consolidado</span>
+        <span>›</span>
+        <span id="tb-sec">Visão Executiva</span>
+      </div>
+    </div>
+    <div class="tb-right">
+      <div class="chip-user"><div class="chip-dot"></div><span id="tb-user">—</span></div>
+      <button class="btn-xs" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="area-bar" id="area-bar"></div>
+
+  <div class="sec-bar">
+    <button class="sec-tab active" onclick="switchSec('exec',this)"><span class="sec-icon">◈</span> Visão Executiva</button>
+    <button class="sec-tab" onclick="switchSec('dre',this)"><span class="sec-icon">≡</span> DRE Completa</button>
+    <button class="sec-tab" onclick="switchSec('razao',this)"><span class="sec-icon">⊙</span> Detalhamento · Razão</button>
+  </div>
+
+  <div class="filter-bar">
+    <span class="fl-label">Período:</span>
+    <div class="month-wrap" id="month-wrap"></div>
+    <div class="fl-sep"></div>
+    <label class="upload-btn" for="file-input">⬆ Importar Planilha</label>
+    <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.ods" onchange="handleUpload(event)">
+    <span class="upload-ok" id="upload-ok"></span>
+  </div>
+
+  <div class="content">
+    <!-- EXEC -->
+    <div class="tab-pane active" id="pane-exec">
+      <div class="kpi-strip" id="kpi-strip"></div>
+      <div class="leituras-card" id="leituras-card"></div>
+      <div class="charts-main">
+        <div class="panel">
+          <div class="panel-hdr">
+            <span class="panel-title">Evolução Mensal de Resultados</span>
+            <span class="panel-tag bg-gold">2026</span>
+          </div>
+          <div class="panel-body"><div class="ch-wrap"><canvas id="ch-evol"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><span class="panel-title">Composição da Receita Bruta</span></div>
+          <div class="panel-body"><div class="ch-wrap"><canvas id="ch-comp"></canvas></div></div>
+        </div>
+      </div>
+      <div class="charts-3">
+        <div class="panel">
+          <div class="panel-hdr"><span class="panel-title">Margem de Contribuição %</span><span class="panel-tag bg-neu" id="badge-mc">MENSAL</span></div>
+          <div class="panel-body"><div class="ch-wrap-sm"><canvas id="ch-mc"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><span class="panel-title">CMV % da Receita Líquida</span></div>
+          <div class="panel-body"><div class="ch-wrap-sm"><canvas id="ch-cmv"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><span class="panel-title">Receita por Área</span><span class="panel-tag bg-gold">ACUM.</span></div>
+          <div class="panel-body" style="height:202px;"><canvas id="ch-area"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRE -->
+    <div class="tab-pane" id="pane-dre">
+      <div class="dre-header">
+        <div class="dre-h-left">
+          <span class="dre-title" id="dre-title">DRE Gerencial — Consolidado</span>
+          <span class="dre-period">Jan–Dez / 2026 · R$</span>
+        </div>
+        <div class="dre-h-right">
+          <button class="btn-flat" onclick="expandAll()">▼ Expandir tudo</button>
+          <button class="btn-flat" onclick="collapseAll()">▲ Recolher tudo</button>
+          <button class="btn-flat" onclick="toggleAnalytics(this)">◉ Ocultar analíticas</button>
+          <button class="btn-gold" onclick="exportDRE()">⬇ Exportar</button>
+        </div>
+      </div>
+      <div class="dre-outer">
+        <div class="dre-scroll">
+          <table class="dre-table" id="dre-table">
+            <thead id="dre-thead"></thead>
+            <tbody id="dre-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RAZÃO -->
+    <div class="tab-pane" id="pane-razao">
+      <div class="razao-filter-grid">
+        <div class="fg" style="grid-column:span 2;">
+          <label>Buscar lançamento, documento, contrapartida ou observação</label>
+          <input type="text" id="rz-busca" placeholder="🔍 Digite para buscar..." oninput="filterRz()">
+        </div>
+        <div class="fg">
+          <label>Conta (código ou nome)</label>
+          <input type="text" id="rz-conta" placeholder="Ex: 3.1.1.01" oninput="filterRz()">
+        </div>
+        <div class="fg">
+          <label>Data inicial</label>
+          <input type="date" id="rz-dt1" onchange="filterRz()">
+        </div>
+        <div class="fg">
+          <label>Data final</label>
+          <input type="date" id="rz-dt2" onchange="filterRz()">
+        </div>
+        <div class="fg">
+          <label>Mês</label>
+          <select id="rz-mes" onchange="filterRz()">
+            <option value="">Todos os meses</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Divisão</label>
+          <select id="rz-div" onchange="filterRz()">
+            <option value="">Todas</option>
+            <option>OPME</option>
+            <option>Diagnóstica</option>
+            <option>Hospitalar</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>&nbsp;</label>
+          <button class="btn-flat" onclick="clearRz()" style="height:38px;">✕ Limpar</button>
+        </div>
+      </div>
+      <div class="razao-info">
+        <span id="rz-count">—</span>
+        <span id="rz-total-val"></span>
+      </div>
+      <div class="razao-outer">
+        <div class="razao-scroll">
+          <table class="razao-table">
+            <thead>
+              <tr>
+                <th style="min-width:105px;">Data</th>
+                <th style="min-width:110px;">Lançamento</th>
+                <th style="min-width:190px;">Conta</th>
+                <th style="min-width:340px;">Observação / Doc</th>
+                <th style="min-width:240px;">Contrapartida</th>
+                <th style="min-width:110px;">Divisão</th>
+                <th class="r" style="min-width:120px;">Valor R$</th>
+              </tr>
+            </thead>
+            <tbody id="rz-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="razao-footer">
+        <span id="rz-showing"></span>
+        <button class="btn-flat" id="btn-mais" style="display:none;" onclick="showMore()">Mostrar mais 150</button>
+        <button class="btn-flat" id="btn-tudo" style="display:none;" onclick="showAll()">Mostrar tudo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-footer">
+    <span class="footer-brand">CSN Gestão &amp; Consultoria</span>
+    <span class="footer-info">caio@consultoriacsn.com.br · (31) 9 8332-1253 · www.consultoriacsn.com.br</span>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ══════════════════════════════════════════════════
+// USERS
+// ══════════════════════════════════════════════════
+const USERS={
+  'diretoria':   {pass:'unlab@2026', perfil:'consolidado', label:'Diretoria',         unit:'Consolidado',  areas:['consolidado','opme','hospitalar','diagnostica']},
+  'gestor.opme': {pass:'opme@2026',  perfil:'opme',        label:'Gestor OPME',       unit:'OPME',         areas:['opme']},
+  'gestor.hosp': {pass:'hosp@2026',  perfil:'hospitalar',  label:'Gestor Hospitalar', unit:'Hospitalar',   areas:['hospitalar']},
+  'gestor.diag': {pass:'diag@2026',  perfil:'diagnostica', label:'Gestor Diagnóstica',unit:'Diagnóstica',  areas:['diagnostica']},
+};
+
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let CU=null, selMs=[0], curArea='consolidado', showAnalytic=true;
+let charts={}, rzAll=[], rzFilt=[], rzPage=150;
+const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+// ══════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════
+const D={
+  consolidado:{
+    recBruta:   [5827800,5342797,0,0,0,0,0,0,0,0,0,0],
+    recBrutaOrc:[7494194,7565740,8064941,9925610,8772727,8763331,9930265,9382748,9438408,10718094,8936542,8978887],
+    deducoes:   [1417915,863612,0,0,0,0,0,0,0,0,0,0],
+    deducoesOrc:[1387308,1387308,1494189,1814835,1601071,1601071,1814835,1707953,1707953,1921716,1601071,1601071],
+    recLiq:     [7245714,6249127,0,0,0,0,0,0,0,0,0,0],
+    recLiqOrc:  [8881502,8953048,9559131,11740445,10373798,10364402,11745100,11090701,11146361,12639811,10537613,10579958],
+    cmv:        [2342801,2843822,0,0,0,0,0,0,0,0,0,0],
+    cmvOrc:     [3509399,3509399,3772742,4562773,4036086,4036086,4562773,4299429,4299429,4826116,4036086,4036086],
+    lucroBruto: [4902913,3405305,0,0,0,0,0,0,0,0,0,0],
+    lucroBrutoOrc:[5372103,5443649,5786389,7177672,6337712,6328316,7182327,6791272,6846932,7813695,6501527,6543872],
+    despesas:   [1710000,1380000,0,0,0,0,0,0,0,0,0,0],
+    ebitda:     [349900,280000,0,0,0,0,0,0,0,0,0,0],
+    resultAdj:  [184800,148000,0,0,0,0,0,0,0,0,0,0],
+    mixOpme:    [1061771,971876,0,0,0,0,0,0,0,0,0,0],
+    mixHosp:    [334832,277971,0,0,0,0,0,0,0,0,0,0],
+    mixDiag:    [5657033,4900648,0,0,0,0,0,0,0,0,0,0],
+  },
+  opme:{
+    recBruta:   [1061771,971876,0,0,0,0,0,0,0,0,0,0],
+    recBrutaOrc:[887834,1060130,1057409,1223312,1167273,1125877,1170967,1167372,1231032,1388874,1229088,1299433],
+    deducoes:   [32448,19280,0,0,0,0,0,0,0,0,0,0],
+    deducoesOrc:[39261,39261,39261,39261,39261,39261,39261,39261,39261,39261,39261,39261],
+    recLiq:     [1029323,952596,0,0,0,0,0,0,0,0,0,0],
+    recLiqOrc:  [939194,1111490,1108769,1274672,1218633,1177237,1222327,1218732,1282392,1440234,1280448,1350793],
+    cmv:        [627412,575100,0,0,0,0,0,0,0,0,0,0],
+    cmvOrc:     [700157,700157,700157,700157,700157,700157,700157,700157,700157,700157,700157,700157],
+    lucroBruto: [401911,377496,0,0,0,0,0,0,0,0,0,0],
+    lucroBrutoOrc:[239037,411333,408612,574515,518476,477080,522170,518575,582235,740077,580291,650636],
+    despesas:   [280000,240000,0,0,0,0,0,0,0,0,0,0],
+    ebitda:     [121911,137496,0,0,0,0,0,0,0,0,0,0],
+    resultAdj:  [89000,102000,0,0,0,0,0,0,0,0,0,0],
+  },
+  hospitalar:{
+    recBruta:   [334832,277971,0,0,0,0,0,0,0,0,0,0],
+    recBrutaOrc:[348225,248527,158527,175527,200527,232527,232527,249527,241527,241527,302527,274527],
+    deducoes:   [47957,47276,0,0,0,0,0,0,0,0,0,0],
+    deducoesOrc:[34508,34508,34508,34508,34508,34508,34508,34508,34508,34508,34508,34508],
+    recLiq:     [386875,230695,0,0,0,0,0,0,0,0,0,0],
+    recLiqOrc:  [386335,285585,226585,238585,263585,295585,295585,312585,304585,304585,365585,337585],
+    cmv:        [28987,32808,0,0,0,0,0,0,0,0,0,0],
+    cmvOrc:     [20479,20479,20479,20479,20479,20479,20479,20479,20479,20479,20479,20479],
+    lucroBruto: [357888,197887,0,0,0,0,0,0,0,0,0,0],
+    lucroBrutoOrc:[365856,265106,206106,218106,243106,275106,275106,292106,284106,284106,345106,317106],
+    despesas:   [98000,82000,0,0,0,0,0,0,0,0,0,0],
+    ebitda:     [55000,42000,0,0,0,0,0,0,0,0,0,0],
+    resultAdj:  [38000,28000,0,0,0,0,0,0,0,0,0,0],
+  },
+  diagnostica:{
+    recBruta:   [5657033,4900648,0,0,0,0,0,0,0,0,0,0],
+    recBrutaOrc:[3365233,3365233,3926454,5608220,4497493,4497493,5608220,5044357,5044357,6180226,4497493,4497493],
+    deducoes:   [1340255,799568,0,0,0,0,0,0,0,0,0,0],
+    deducoesOrc:[546489,546489,637493,910426,728644,728644,910426,819682,819682,991318,728644,728644],
+    recLiq:     [4316778,4101080,0,0,0,0,0,0,0,0,0,0],
+    recLiqOrc:  [4006823,4006823,4674627,6678038,5342431,5342431,6678038,6010234,6010234,7345842,5342431,5342431],
+    cmv:        [1686542,2283668,0,0,0,0,0,0,0,0,0,0],
+    cmvOrc:     [1580061,1580061,1843424,2615594,2106698,2106698,2615594,2389866,2389866,2932517,2106698,2106698],
+    lucroBruto: [2630236,1817412,0,0,0,0,0,0,0,0,0,0],
+    lucroBrutoOrc:[2426762,2426762,2831203,4062444,3235733,3235733,4062444,3620368,3620368,4413325,3235733,3235733],
+    despesas:   [980000,820000,0,0,0,0,0,0,0,0,0,0],
+    ebitda:     [186000,145000,0,0,0,0,0,0,0,0,0,0],
+    resultAdj:  [62000,48000,0,0,0,0,0,0,0,0,0,0],
+  },
+};
+
+// ══════════════════════════════════════════════════
+// DRE STRUCTURE (4 levels, with account codes)
+// ══════════════════════════════════════════════════
+const TREE=[
+  {id:'rb',lv:1,code:'1',label:'RECEITA BRUTA',result:true,key:'recBruta',keyOrc:'recBrutaOrc',children:[
+    {id:'rv',lv:2,code:'1.1',label:'Receita com Vendas',children:[
+      {id:'rv1',lv:3,code:'1.1.1',label:'Revenda de Mercadorias',children:[
+        {id:'rv1a',lv:4,code:'3.1.1.01.001',label:'Revenda de Mercadorias (Geral)',      rea:[16273,42598,0,0,0,0,0,0,0,0,0,0],orc:[0,0,0,0,0,0,0,0,0,0,0,0]},
+        {id:'rv1b',lv:4,code:'3.1.1.01.002',label:'Revenda de Mercadorias — OPME',       rea:[1057791,940688,0,0,0,0,0,0,0,0,0,0],orc:[887834,1060130,1057409,1223312,1167273,1125877,1170967,1167372,1231032,1388874,1229088,1299433]},
+        {id:'rv1c',lv:4,code:'3.1.1.01.003',label:'Revenda de Mercadorias — HOSPITALAR', rea:[54456,38880,0,0,0,0,0,0,0,0,0,0],orc:[15000,20000,25000,30000,45000,45000,45000,45000,50000,55000,55000,55000]},
+        {id:'rv1d',lv:4,code:'3.1.1.01.004',label:'Revenda de Mercadorias — DIAGNÓSTICA',rea:[3593134,3754956,0,0,0,0,0,0,0,0,0,0],orc:[3019477,3019477,3522723,5032462,4025969,4025969,5032462,4529215,4529215,5535708,4025969,4025969]},
+      ]},
+    ]},
+    {id:'rs',lv:2,code:'1.2',label:'Receitas com Serviços',children:[
+      {id:'rs1',lv:3,code:'1.2.1',label:'Serviços Prestados',children:[
+        {id:'rs1b',lv:4,code:'3.1.1.03.003',label:'Serviços Prestados — HOSPITALAR', rea:[62027,61726,0,0,0,0,0,0,0,0,0,0],orc:[60000,60000,60000,60000,70000,70000,70000,80000,85000,85000,85000,85000]},
+        {id:'rs1c',lv:4,code:'3.1.1.03.004',label:'Serviços Prestados — DIAGNÓSTICA',rea:[184627,17066,0,0,0,0,0,0,0,0,0,0],orc:[64696,64696,75479,107827,86262,86262,107827,97045,97045,118610,86262,86262]},
+      ]},
+      {id:'rs2',lv:3,code:'1.2.2',label:'Locações e Comissões',children:[
+        {id:'rs2a',lv:4,code:'3.1.1.03.005',label:'Locações Clientes — HOSPITALAR',     rea:[54263,27649,0,0,0,0,0,0,0,0,0,0],orc:[30000,30000,30000,25000,25000,25000,25000,25000,30000,30000,30000,34000]},
+        {id:'rs2b',lv:4,code:'3.1.1.03.006',label:'Locações Clientes — DIAGNÓSTICA',    rea:[571862,378883,0,0,0,0,0,0,0,0,0,0],orc:[281359,281359,328252,468932,375146,375146,468932,422039,422039,515825,375146,375146]},
+        {id:'rs2c',lv:4,code:'3.1.1.03.007',label:'Comissões Fornecedores — HOSPITALAR',rea:[163968,30782,0,0,0,0,0,0,0,0,0,0],orc:[243750,138000,74000,86000,86000,118000,118000,125000,102000,97000,158000,126000]},
+      ]},
+    ]},
+  ]},
+  {id:'ded',lv:1,code:'2',label:'DEDUÇÕES DAS RECEITAS',result:false,key:'deducoes',keyOrc:'deducoesOrc',neg:true,children:[
+    {id:'dev',lv:2,code:'2.1',label:'Devoluções e Abatimentos',children:[
+      {id:'dev1',lv:3,code:'2.1.1',label:'Devoluções de Vendas',children:[
+        {id:'dev1a',lv:4,code:'3.1.2.01.001',label:'Devoluções de Vendas — OPME',       rea:[32448,43999,0,0,0,0,0,0,0,0,0,0],orc:[11997,11997,11997,11997,11997,11997,11997,11997,11997,11997,11997,11997]},
+        {id:'dev1b',lv:4,code:'3.1.2.01.001',label:'Devoluções de Vendas — HOSPITALAR', rea:[0,27997,0,0,0,0,0,0,0,0,0,0],orc:[822,822,822,822,822,822,822,822,822,822,822,822]},
+        {id:'dev1c',lv:4,code:'3.1.2.01.001',label:'Devoluções de Vendas — DIAGNÓSTICA',rea:[663378,62180,0,0,0,0,0,0,0,0,0,0],orc:[94801,94801,110601,158001,126401,126401,158001,142201,142201,173801,126401,126401]},
+      ]},
+    ]},
+    {id:'imp',lv:2,code:'2.2',label:'Impostos s/ Vendas e Serviços',children:[
+      {id:'imp1',lv:3,code:'2.2.1',label:'ICMS s/ Vendas',children:[
+        {id:'imp1b',lv:4,code:'3.1.2.02.001',label:'ICMS — HOSPITALAR', rea:[9284,7977,0,0,0,0,0,0,0,0,0,0],orc:[6845,6845,6845,6845,6845,6845,6845,6845,6845,6845,6845,6845]},
+        {id:'imp1c',lv:4,code:'3.1.2.02.001',label:'ICMS — DIAGNÓSTICA',rea:[505622,596541,0,0,0,0,0,0,0,0,0,0],orc:[457098,457098,533280,761829,609463,609463,761829,685646,685646,838012,609463,609463]},
+      ]},
+      {id:'imp2',lv:3,code:'2.2.2',label:'PIS / COFINS',children:[
+        {id:'imp2a',lv:4,code:'3.1.2.02.002',label:'PIS — DIAGNÓSTICA',   rea:[20582,13894,0,0,0,0,0,0,0,0,0,0],orc:[15372,15372,17934,25620,20496,20496,25620,23058,23058,28182,20496,20496]},
+        {id:'imp2b',lv:4,code:'3.1.2.02.003',label:'COFINS — DIAGNÓSTICA',rea:[94802,63999,0,0,0,0,0,0,0,0,0,0],orc:[70785,70785,82583,117976,94381,94381,117976,106178,106178,129773,94381,94381]},
+        {id:'imp2c',lv:4,code:'3.1.2.02.002',label:'PIS — OPME',          rea:[5107,3344,0,0,0,0,0,0,0,0,0,0],orc:[6825,6825,6825,6825,6825,6825,6825,6825,6825,6825,6825,6825]},
+        {id:'imp2d',lv:4,code:'3.1.2.02.002',label:'PIS — HOSPITALAR',    rea:[5372,2622,0,0,0,0,0,0,0,0,0,0],orc:[3550,3550,3550,3550,3550,3550,3550,3550,3550,3550,3550,3550]},
+      ]},
+      {id:'imp3',lv:3,code:'2.2.3',label:'ISS e Outros',children:[
+        {id:'imp3a',lv:4,code:'3.1.2.02.004',label:'ISSQN — HOSPITALAR', rea:[12026,5025,0,0,0,0,0,0,0,0,0,0],orc:[8472,8472,8472,8472,8472,8472,8472,8472,8472,8472,8472,8472]},
+        {id:'imp3b',lv:4,code:'3.1.2.02.004',label:'ISSQN — DIAGNÓSTICA',rea:[11110,953,0,0,0,0,0,0,0,0,0,0],orc:[3235,3235,3774,5391,4313,4313,5391,4852,4852,5931,4313,4313]},
+      ]},
+    ]},
+  ]},
+  {id:'rl',lv:1,code:'=',label:'RECEITA LÍQUIDA',result:true,highlight:true,key:'recLiq',keyOrc:'recLiqOrc',children:[]},
+  {id:'cst',lv:1,code:'3',label:'CUSTOS',result:false,key:'cmv',keyOrc:'cmvOrc',neg:true,children:[
+    {id:'cmv_g',lv:2,code:'3.1',label:'CMV — Custo das Mercadorias Vendidas',children:[
+      {id:'cmv2',lv:3,code:'3.1.1',label:'Custo por Unidade',children:[
+        {id:'cmv2a',lv:4,code:'4.1.2.01.001',label:'CMV — OPME',       rea:[671699,571140,0,0,0,0,0,0,0,0,0,0],orc:[729750,729750,729750,729750,729750,729750,729750,729750,729750,729750,729750,729750]},
+        {id:'cmv2b',lv:4,code:'4.1.2.01.002',label:'CMV — HOSPITALAR', rea:[27112,20269,0,0,0,0,0,0,0,0,0,0],orc:[18374,18374,18374,18374,18374,18374,18374,18374,18374,18374,18374,18374]},
+        {id:'cmv2c',lv:4,code:'4.1.2.01.003',label:'CMV — DIAGNÓSTICA',rea:[1521629,1868095,0,0,0,0,0,0,0,0,0,0],orc:[1334879,1334879,1557358,2224798,1779838,1779838,2224798,2002318,2002318,2447278,1779838,1779838]},
+        {id:'cmv1a',lv:4,code:'4.1.1.01.001',label:'CMV Mercadorias (Geral)', rea:[278341,388069,0,0,0,0,0,0,0,0,0,0],orc:[1432715,1432715,1469038,1578008,1505361,1505361,1578008,1541684,1541684,1614331,1505361,1505361]},
+      ]},
+      {id:'cmv3',lv:3,code:'3.1.2',label:'Perdas e Avarias',children:[
+        {id:'cmv3a',lv:4,code:'4.1.4.01.001',label:'Perdas/Avarias — OPME',       rea:[2894,3981,0,0,0,0,0,0,0,0,0,0],orc:[3333,3333,3333,3333,3333,3333,3333,3333,3333,3333,3333,3333]},
+        {id:'cmv3b',lv:4,code:'4.1.4.01.002',label:'Perdas/Avarias — HOSPITALAR', rea:[548,0,0,0,0,0,0,0,0,0,0,0],orc:[2087,2087,2087,2087,2087,2087,2087,2087,2087,2087,2087,2087]},
+        {id:'cmv3c',lv:4,code:'4.1.4.01.003',label:'Perdas/Avarias — DIAGNÓSTICA',rea:[43675,38465,0,0,0,0,0,0,0,0,0,0],orc:[27242,27242,31783,45404,36323,36323,45404,40864,40864,49944,36323,36323]},
+      ]},
+    ]},
+  ]},
+  {id:'lb',lv:1,code:'=',label:'LUCRO BRUTO',result:true,highlight:true,key:'lucroBruto',keyOrc:'lucroBrutoOrc',children:[]},
+  {id:'desp',lv:1,code:'4',label:'DESPESAS OPERACIONAIS',result:false,key:'despesas',neg:true,children:[
+    {id:'d1',lv:2,code:'4.1',label:'Despesas Administrativas',children:[
+      {id:'d1a',lv:3,code:'4.1.1',label:'Pessoal e Encargos',children:[
+        {id:'d1a1',lv:4,code:'4.1.1.01.001',label:'Salários e Ordenados', rea:[620000,540000,0,0,0,0,0,0,0,0,0,0],orc:[580000,580000,580000,580000,580000,580000,580000,580000,580000,580000,580000,580000]},
+        {id:'d1a2',lv:4,code:'4.1.1.01.002',label:'INSS e FGTS',          rea:[148000,129000,0,0,0,0,0,0,0,0,0,0],orc:[135000,135000,135000,135000,135000,135000,135000,135000,135000,135000,135000,135000]},
+      ]},
+      {id:'d1b',lv:3,code:'4.1.2',label:'Despesas Gerais',children:[
+        {id:'d1b1',lv:4,code:'4.1.2.01.001',label:'Aluguel e Condomínio', rea:[210000,180000,0,0,0,0,0,0,0,0,0,0],orc:[200000,200000,200000,200000,200000,200000,200000,200000,200000,200000,200000,200000]},
+        {id:'d1b2',lv:4,code:'4.1.2.01.002',label:'Energia e Utilidades', rea:[85000,72000,0,0,0,0,0,0,0,0,0,0],orc:[75000,75000,75000,75000,75000,75000,75000,75000,75000,75000,75000,75000]},
+        {id:'d1b3',lv:4,code:'4.1.2.01.003',label:'Comunicação e TI',     rea:[42000,38000,0,0,0,0,0,0,0,0,0,0],orc:[38000,38000,38000,38000,38000,38000,38000,38000,38000,38000,38000,38000]},
+        {id:'d1b4',lv:4,code:'4.1.2.01.004',label:'Outras Despesas Adm.', rea:[605000,421000,0,0,0,0,0,0,0,0,0,0],orc:[420000,420000,420000,420000,420000,420000,420000,420000,420000,420000,420000,420000]},
+      ]},
+    ]},
+  ]},
+  {id:'ebitda',lv:1,code:'=',label:'EBITDA',result:true,highlight:true,key:'ebitda',children:[]},
+  {id:'radj', lv:1,code:'=',label:'RESULTADO AJUSTADO',result:true,highlight:true,key:'resultAdj',children:[]},
+];
+
+// ══════════════════════════════════════════════════
+// RAZÃO SAMPLE
+// ══════════════════════════════════════════════════
+const RZ_SAMPLE=[
+  {data:'2026-01-02',lanc:'NS 68110',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Notas Fiscais de Saída — C0000000048 NS 68110 — Venda de produtos para hospital parceiro conforme pedido n° 48',contra:'CENTRO MEDICO HOSPITALAR DE VILA VELHA S',div:'OPME',valor:-1500},
+  {data:'2026-01-05',lanc:'NS 68204',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Notas Fiscais de Saída — C0000000782 NS 68204 — Venda diagnóstica janeiro',contra:'HEMOLAB LABORATORIO DE PATOLOGIA CLINICA',div:'Diagnóstica',valor:11.31},
+  {data:'2026-01-05',lanc:'NS 68205',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Notas Fiscais de Saída — C0000001138 NS 68205',contra:'LABORATORIO SAO SEBASTIAO LTDA',div:'Diagnóstica',valor:6.31},
+  {data:'2026-01-05',lanc:'NS 68224',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Notas Fiscais de Saída — C0000000633 NS 68224 — Fornecimento de insumos diagnósticos conforme contrato vigente',contra:'NASCIMENTO TRIGO SAUDE LTDA',div:'Diagnóstica',valor:-1926},
+  {data:'2026-01-05',lanc:'DS 68247',tipo:'Cancelamento',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Nota fiscal de saída — Cancelamento — C0000... Estorno de lançamento duplicado referente NF anterior',contra:'LABORATORIO SAO SEBASTIAO LTDA',div:'Diagnóstica',valor:-6.31},
+  {data:'2026-01-05',lanc:'DS 68248',tipo:'Cancelamento',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Nota fiscal de saída — Cancelamento — C0000... Estorno de lançamento duplicado referente NF anterior',contra:'HEMOLAB LABORATORIO DE PATOLOGIA CLINICA',div:'Diagnóstica',valor:-11.31},
+  {data:'2026-01-07',lanc:'NS 68392',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Notas Fiscais de Saída — C0000000865 NS 68392',contra:'FUNDACAO EDUCACIONAL LUCAS MACHADO FELUM',div:'Diagnóstica',valor:-436},
+  {data:'2026-01-09',lanc:'DS 3009', tipo:'Devolução',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Devs.Nota Fiscal de Saída — C0000000036 DS 3009 — Devolução de mercadoria com vício de fabricação conforme laudo técnico emitido em 09/01/2026',contra:'UNIMED VITORIA COOPERATIVA DE TRABALHO MÉDICO',div:'Diagnóstica',valor:-3138.94},
+  {data:'2026-01-09',lanc:'DS 3009', tipo:'Devolução',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Devs.Nota Fiscal de Saída — C0000000036 DS 3009',contra:'UNIMED VITORIA COOPERATIVA DE TRABALHO MÉDICO',div:'Diagnóstica',valor:-6436.48},
+  {data:'2026-01-09',lanc:'DS 3010', tipo:'Devolução',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Devolução da nota fiscal de saída — Cancelamento autorizado pelo gestor comercial em 08/01/2026',contra:'UNIMED VITORIA COOPERATIVA DE TRABALHO MÉDICO',div:'Diagnóstica',valor:3138.94},
+  {data:'2026-01-09',lanc:'DS 3010', tipo:'Devolução',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Devolução da nota fiscal de saída — Cancelamento autorizado pelo gestor comercial em 08/01/2026',contra:'UNIMED VITORIA COOPERATIVA DE TRABALHO MÉDICO',div:'Diagnóstica',valor:6436.48},
+  {data:'2026-01-10',lanc:'NS 68511',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Notas Fiscais de Saída — C0000000863 NS 68511 — Venda de insumos para diagnóstico por imagem',contra:'NASCIMENTO TRIGO SAUDE LTDA',div:'Diagnóstica',valor:3050},
+  {data:'2026-01-12',lanc:'NS 68612',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.002',contaNome:'Revenda OPME',obs:'Notas Fiscais de Saída — C0000001002 NS 68612 — Fornecimento OPME conforme pedido hospitalar',contra:'HOSPITAL SANTA CASA VITORIA',div:'OPME',valor:45280},
+  {data:'2026-01-12',lanc:'NS 68613',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.002',contaNome:'Revenda OPME',obs:'Notas Fiscais de Saída — C0000001003 NS 68613',contra:'HOSPITAL DOM BOSCO',div:'OPME',valor:32100},
+  {data:'2026-01-14',lanc:'NS 68712',tipo:'Nota Fiscal Saída',conta:'3.1.1.03.003',contaNome:'Serviços Prestados — HOSPITALAR',obs:'Notas Fiscais de Saída — C0000001050 NS 68712 — Prestação de serviços hospitalares conforme contrato mensal vigente',contra:'UNIMED BH COOPERATIVA DE TRABALHO MEDICO',div:'Hospitalar',valor:62026.68},
+  {data:'2026-01-15',lanc:'NS 68800',tipo:'Nota Fiscal Saída',conta:'3.1.1.03.006',contaNome:'Locações — DIAGNÓSTICA',obs:'Notas Fiscais de Saída — C0000001120 NS 68800 — Locação de equipamentos diagnósticos janeiro/26',contra:'CENTRO DE DIAGNOSTICO LAGOA SANTA LTDA',div:'Diagnóstica',valor:18500},
+  {data:'2026-01-16',lanc:'NS 68801',tipo:'Nota Fiscal Saída',conta:'3.1.1.03.006',contaNome:'Locações — DIAGNÓSTICA',obs:'Notas Fiscais de Saída — C0000001121 NS 68801 — Locação mensal conforme contrato 2025/0042',contra:'LABORATORIO DIAGNOSTICOS MINAS',div:'Diagnóstica',valor:22300},
+  {data:'2026-01-18',lanc:'NS 68950',tipo:'Nota Fiscal Saída',conta:'3.1.1.03.007',contaNome:'Comissões — HOSPITALAR',obs:'Comissão Fornecedor Jan/26 — C0000001200 — Comissão sobre vendas de produtos hospitalares conforme tabela comercial vigente',contra:'JANSSEN CILAG FARMACEUTICA LTDA',div:'Hospitalar',valor:163968.02},
+  {data:'2026-01-20',lanc:'DS 3200', tipo:'Devolução',conta:'3.1.2.01.001',contaNome:'Devoluções de Vendas',obs:'Devolução NF saída — C0000001300 — Produto devolvido com prazo de validade vencido',contra:'SANTA CASA MISERICORDIA BELO HORIZONTE',div:'OPME',valor:-32448},
+  {data:'2026-01-22',lanc:'JE 1001', tipo:'Apuração Fiscal',conta:'3.1.2.02.001',contaNome:'ICMS s/ Vendas',obs:'Apuração ICMS Jan/26 — Guia recolhimento período 01/01 a 31/01/2026',contra:'CONTA CORRENTE BANCÁRIA',div:'Diagnóstica',valor:-514933.07},
+  {data:'2026-01-25',lanc:'JE 1002', tipo:'Apuração Fiscal',conta:'3.1.2.02.002',contaNome:'PIS s/ Vendas',obs:'Apuração PIS Jan/26',contra:'CONTA CORRENTE BANCÁRIA',div:'Diagnóstica',valor:-32206.32},
+  {data:'2026-01-25',lanc:'JE 1003', tipo:'Apuração Fiscal',conta:'3.1.2.02.003',contaNome:'COFINS s/ Vendas',obs:'Apuração COFINS Jan/26',contra:'CONTA CORRENTE BANCÁRIA',div:'Diagnóstica',valor:-148342.93},
+  {data:'2026-01-28',lanc:'NS 69100',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Notas Fiscais de Saída — C0000001500 NS 69100 — Venda de insumos para diagnóstico por imagem e análises clínicas',contra:'BIOLAB LABORATORIO CLINICO',div:'Diagnóstica',valor:87400},
+  {data:'2026-01-30',lanc:'NS 69200',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.002',contaNome:'Revenda OPME',obs:'Notas Fiscais de Saída — C0000001600 NS 69200',contra:'HOSPITAL LIFECENTER',div:'OPME',valor:128990},
+  {data:'2026-02-05',lanc:'NS 70100',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.001',contaNome:'Revenda de Mercadorias',obs:'Notas Fiscais de Saída Fev/26 — C0000002001 NS 70100',contra:'HEMOLAB LABORATORIO DE PATOLOGIA CLINICA',div:'Diagnóstica',valor:95400},
+  {data:'2026-02-08',lanc:'NS 70200',tipo:'Nota Fiscal Saída',conta:'3.1.1.01.002',contaNome:'Revenda OPME',obs:'Notas Fiscais de Saída Fev/26 — C0000002002 NS 70200',contra:'HOSPITAL SANTA CASA VITORIA',div:'OPME',valor:38900},
+  {data:'2026-02-10',lanc:'NS 70350',tipo:'Nota Fiscal Saída',conta:'3.1.1.03.003',contaNome:'Serviços Prestados — HOSPITALAR',obs:'Notas Fiscais de Saída Fev/26 — C0000002100 NS 70350 — Prestação de serviços hospitalares fevereiro/2026',contra:'UNIMED BH COOPERATIVA DE TRABALHO MEDICO',div:'Hospitalar',valor:61725.52},
+  {data:'2026-02-12',lanc:'DS 3400', tipo:'Devolução',conta:'3.1.2.01.001',contaNome:'Devoluções de Vendas',obs:'Devolução NF saída Fev/26 — C0000002200 DS 3400 — Mercadoria danificada durante transporte',contra:'HOSPITAL DOM BOSCO',div:'OPME',valor:-43999.5},
+  {data:'2026-02-15',lanc:'NS 70600',tipo:'Nota Fiscal Saída',conta:'3.1.1.03.007',contaNome:'Comissões — HOSPITALAR',obs:'Comissão Fornecedor Fev/26 — C0000002300 — Comissão de fevereiro/2026',contra:'JOHNSON & JOHNSON DO BRASIL LTDA',div:'Hospitalar',valor:30781.69},
+  {data:'2026-02-20',lanc:'JE 2001', tipo:'Apuração Fiscal',conta:'3.1.2.02.001',contaNome:'ICMS s/ Vendas',obs:'Apuração ICMS Fev/26 — Guia recolhimento período 01/02 a 28/02/2026',contra:'CONTA CORRENTE BANCÁRIA',div:'Diagnóstica',valor:-605055.09},
+];
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+// Format full number without cents (no K abbreviation for DRE)
+const fmtFull=(v)=>{
+  if(v===0||v===null||v===undefined)return '—';
+  const abs=Math.abs(v);
+  return 'R$ '+abs.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+};
+// Format with cents (for Razão)
+const fmtCents=(v)=>{
+  if(v===null||v===undefined)return '—';
+  const abs=Math.abs(v);
+  return 'R$ '+abs.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+};
+// For KPIs (abbreviated M/K but no cents)
+const fmtKPI=(v)=>{
+  if(!v&&v!==0)return '—';
+  const abs=Math.abs(v);
+  if(abs>=1e6)return 'R$ '+(v/1e6).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'M';
+  if(abs>=1e3)return 'R$ '+(v/1e3).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0})+'K';
+  return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0});
+};
+const fmtPct=(v,d=1)=>(!isFinite(v)||v==null)?'—':(v*100).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d})+'%';
+const sum=(arr,idxs)=>idxs.reduce((a,i)=>a+(arr&&arr[i]?arr[i]:0),0);
+const clamp=(v,a,b)=>Math.min(Math.max(v,a),b);
+// Parse date string yyyy-mm-dd
+const parseDate=(s)=>{if(!s)return null;const[y,m,d]=s.split('-');return new Date(y,m-1,d);};
+const fmtDateBR=(s)=>{if(!s)return '';const[y,m,d]=s.split('-');return `${d}/${m}/${y}`;};
+
+// ══════════════════════════════════════════════════
+// DRE EXPANDED STATE
+// ══════════════════════════════════════════════════
+let expState={};
+function initExpanded(nodes){
+  nodes.forEach(n=>{
+    expState[n.id]=(n.lv<=2);
+    if(n.children&&n.children.length)initExpanded(n.children);
+  });
+}
+initExpanded(TREE);
+
+// ══════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════
+function doLogin(){
+  const u=document.getElementById('inp-user').value.trim().toLowerCase();
+  const p=document.getElementById('inp-pass').value;
+  const usr=USERS[u];
+  if(!usr||usr.pass!==p){document.getElementById('login-err').textContent='Usuário ou senha incorretos.';return;}
+  document.getElementById('login-err').textContent='';
+  CU={...usr,username:u};
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp();
+}
+function doLogout(){
+  CU=null;selMs=[0];curArea='consolidado';destroyCharts();
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('inp-user').value='';
+  document.getElementById('inp-pass').value='';
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+function initApp(){
+  document.getElementById('tb-user').textContent=CU.label;
+  buildAreaTabs();
+  curArea=CU.areas[0];
+  buildMonthPills();
+  const rzm=document.getElementById('rz-mes');
+  MESES.forEach((m,i)=>{const o=document.createElement('option');o.value=i;o.textContent=m+'/26';rzm.appendChild(o);});
+  rzAll=RZ_SAMPLE.filter(r=>CU.perfil==='consolidado'||r.div.toLowerCase().includes(CU.unit.toLowerCase().slice(0,4)));
+  renderAll();
+}
+
+function buildAreaTabs(){
+  const bar=document.getElementById('area-bar');bar.innerHTML='';
+  const lbl={consolidado:'Consolidado',opme:'OPME',hospitalar:'Hospitalar',diagnostica:'Diagnóstica'};
+  CU.areas.forEach((a,i)=>{
+    const b=document.createElement('button');
+    b.className='area-tab'+(i===0?' active':'');
+    b.textContent=lbl[a];
+    b.onclick=()=>switchArea(a,b);
+    bar.appendChild(b);
+  });
+}
+
+function buildMonthPills(){
+  const w=document.getElementById('month-wrap');w.innerHTML='';
+  const all=document.createElement('button');all.className='mpill-all';all.textContent='Todos';all.onclick=selAll;w.appendChild(all);
+  MESES.forEach((m,i)=>{
+    const b=document.createElement('button');
+    b.className='mpill'+(i===0?' on':'');
+    b.textContent=m;
+    b.onclick=()=>toggleM(i,b);
+    w.appendChild(b);
+  });
+}
+
+function toggleM(i,btn){
+  const idx=selMs.indexOf(i);
+  if(idx>-1){if(selMs.length===1)return;selMs.splice(idx,1);btn.classList.remove('on');}
+  else{selMs.push(i);btn.classList.add('on');}
+  renderAll();
+}
+function selAll(){selMs=MESES.map((_,i)=>i);document.querySelectorAll('.mpill').forEach(b=>b.classList.add('on'));renderAll();}
+function switchArea(a,btn){
+  curArea=a;
+  document.querySelectorAll('.area-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  const lbl={consolidado:'Consolidado',opme:'OPME',hospitalar:'Hospitalar',diagnostica:'Diagnóstica'};
+  document.getElementById('tb-unit').textContent=lbl[a];
+  document.getElementById('dre-title').textContent='DRE Gerencial — '+lbl[a];
+  if(a!=='consolidado'){rzAll=RZ_SAMPLE.filter(r=>r.div.toLowerCase().includes(a.slice(0,4)));}
+  else{rzAll=[...RZ_SAMPLE];}
+  renderAll();
+}
+function switchSec(pane,btn){
+  document.querySelectorAll('.sec-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+pane).classList.add('active');
+  document.getElementById('tb-sec').textContent=btn.textContent.trim().replace(/^[◈≡⊙] /,'');
+  if(pane==='exec'){destroyCharts();renderCharts();}
+  if(pane==='dre')renderDRE();
+  if(pane==='razao')renderRz();
+}
+
+function renderAll(){renderKPIs();renderLeituras();destroyCharts();renderCharts();renderDRE();renderRz();}
+
+// ══════════════════════════════════════════════════
+// KPIs
+// ══════════════════════════════════════════════════
+function renderKPIs(){
+  const d=D[curArea],ms=selMs;
+  const rb=sum(d.recBruta,ms),rb_o=sum(d.recBrutaOrc,ms);
+  const rl=sum(d.recLiq,ms),rl_o=sum(d.recLiqOrc,ms);
+  const lb=sum(d.lucroBruto,ms),desp=sum(d.despesas,ms);
+  const eb=sum(d.ebitda,ms),ra=sum(d.resultAdj,ms);
+  const cmv=sum(d.cmv,ms);
+  const mc=rl>0?(lb-desp)/rl:0;
+  const dRb=rb_o?(rb-rb_o)/rb_o:null;
+  const dRl=rl_o?(rl-rl_o)/rl_o:null;
+  const hasR=rb>0;
+
+  const K=[
+    {label:'Receita Bruta',val:fmtKPI(hasR?rb:rb_o),badge:dRb!=null?(dRb>=0?`▲ ${fmtPct(Math.abs(dRb))}`:`▼ ${fmtPct(Math.abs(dRb))}`):'Orçado',bc:dRb!=null?(dRb>=0?'bg-pos':'bg-neg'):'bg-gold',bar:'gold',sub:'Período selecionado'},
+    {label:'Receita Líquida',val:fmtKPI(hasR?rl:rl_o),badge:dRl!=null?(dRl>=0?'▲ Base positiva':'▼ Abaixo orçado'):'Orçado',bc:dRl!=null?(dRl>=0?'bg-pos':'bg-neg'):'bg-neu',bar:dRl!=null?(dRl>=0?'green':'red'):'neutral',sub:'Após deduções'},
+    {label:'Margem de Contribuição',val:hasR?fmtPct(mc):'—',badge:mc>0.4?'▲ Margem forte':mc>0.25?'Margem moderada':'▼ Margem fraca',bc:mc>0.4?'bg-pos':mc>0.25?'bg-neu':'bg-neg',bar:mc>0.4?'green':mc>0.25?'gold':'red',sub:fmtKPI(hasR?lb-desp:0)},
+    {label:'EBITDA',val:fmtKPI(hasR?eb:0),badge:eb>0?'▲ Geração operacional':'—',bc:'bg-pos',bar:'green',sub:hasR&&rl>0?fmtPct(eb/rl)+' da Rec. Líq.':'Orçado'},
+    {label:'Resultado Ajustado',val:fmtKPI(hasR?ra:0),badge:ra>0?'▲ Resultado positivo':'▼ Negativo',bc:ra>0?'bg-pos':'bg-neg',bar:ra>0?'green':'red',sub:'Após rateio ADM'},
+    {label:'Total Custos',val:fmtKPI(hasR?cmv:sum(d.cmvOrc,ms)),badge:'Monitorar',bc:'bg-gold',bar:'gold',sub:'CMV + CSP + Operac.'},
+    {label:'Total Despesas',val:fmtKPI(hasR?desp:0),badge:'Monitorar',bc:'bg-gold',bar:'neutral',sub:'Fixas + Variáveis'},
+  ];
+
+  document.getElementById('kpi-strip').innerHTML=K.map(k=>`
+    <div class="kpi">
+      <div class="kpi-top-bar ${k.bar}"></div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.val}</div>
+      <div><span class="kpi-badge ${k.bc}">${k.badge}</span></div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════
+// LEITURAS
+// ══════════════════════════════════════════════════
+function renderLeituras(){
+  const d=D[curArea],ms=selMs;
+  const rb=sum(d.recBruta,ms),rb_o=sum(d.recBrutaOrc,ms);
+  const rl=sum(d.recLiq,ms),lb=sum(d.lucroBruto,ms),desp=sum(d.despesas,ms);
+  const ra=sum(d.resultAdj,ms);
+  const mc=rl>0?(lb-desp)/rl:0;
+  const dRb=rb_o?(rb-rb_o)/rb_o:0;
+  const hasR=rb>0;
+  const lbl=ms.length===1?MESES[ms[0]]+'/26':'Acumulado '+ms.length+' meses';
+  document.getElementById('leituras-card').innerHTML=`
+    <div class="leit-tag">Leituras<br>Automáticas<br><small style="font-size:10px;opacity:.7;font-family:'Outfit'">${lbl}</small></div>
+    <div class="leit-item">
+      <div class="leit-title">Leitura de faturamento</div>
+      <div class="leit-body">${hasR?(dRb>=0?`Receita acima do orçado em <strong>${fmtPct(Math.abs(dRb))}</strong>, totalizando <strong>${fmtKPI(rb)}</strong> no período.`:`Receita abaixo do orçado em <strong>${fmtPct(Math.abs(dRb))}</strong>. Orçado: ${fmtKPI(rb_o)}, realizado: ${fmtKPI(rb)}.`):'Período sem realizado — exibindo valores orçados.'}</div>
+    </div>
+    <div class="leit-item">
+      <div class="leit-title">Eficiência operacional</div>
+      <div class="leit-body">Margem de contribuição em <strong>${fmtPct(mc)}</strong> e despesas em <strong>${rl>0?fmtPct(desp/rl):'—'}</strong> da receita líquida.</div>
+    </div>
+    <div class="leit-item">
+      <div class="leit-title">Resultado final</div>
+      <div class="leit-body">${hasR?`Resultado ajustado <strong>${ra>=0?'positivo':'negativo'}</strong> de <strong>${fmtKPI(ra)}</strong>, com margem final de <strong>${rl>0?fmtPct(ra/rl):'—'}</strong>.`:'Aguardando realização do período.'}</div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════════
+// CHARTS
+// ══════════════════════════════════════════════════
+const gold='#A8832A',goldA='rgba(168,131,42,0.2)',goldb='rgba(168,131,42,0.07)',green='#1A6B3C',greenA='rgba(26,107,60,0.15)',red='#B83232',blue='#1D4ED8';
+const axX={ticks:{color:'#9A9282',font:{size:10,family:'Outfit'}},grid:{color:'rgba(0,0,0,0.04)'}};
+const axY={ticks:{color:'#9A9282',font:{size:10,family:'Outfit'},callback:v=>'R$ '+(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v)},grid:{color:'rgba(0,0,0,0.04)'}};
+const axYPct={ticks:{color:'#9A9282',font:{size:10,family:'Outfit'},callback:v=>v.toFixed(0)+'%'},grid:{color:'rgba(0,0,0,0.04)'}};
+
+function mkC(id,cfg){const c=document.getElementById(id);if(!c)return;if(charts[id])charts[id].destroy();charts[id]=new Chart(c,cfg);}
+function destroyCharts(){Object.values(charts).forEach(c=>{if(c)c.destroy();});charts={};}
+
+function renderCharts(){
+  const d=D[curArea];
+  const hr=i=>d.recBruta[i]>0;
+
+  mkC('ch-evol',{type:'bar',data:{labels:MESES,datasets:[
+    {label:'Rec.Bruta',data:MESES.map((_,i)=>hr(i)?d.recBruta[i]:d.recBrutaOrc[i]),backgroundColor:goldA,borderColor:'rgba(168,131,42,0.35)',borderWidth:1,borderRadius:2},
+    {label:'Rec.Líquida',data:MESES.map((_,i)=>hr(i)?d.recLiq[i]:d.recLiqOrc[i]),backgroundColor:goldb,borderColor:gold,borderWidth:1,borderRadius:2},
+    {label:'EBITDA',data:MESES.map((_,i)=>hr(i)?d.ebitda[i]:null),type:'line',borderColor:green,backgroundColor:'transparent',tension:.4,pointRadius:4,pointBackgroundColor:green,pointBorderColor:'#fff',pointBorderWidth:2},
+    {label:'Res.Ajustado',data:MESES.map((_,i)=>hr(i)?d.resultAdj[i]:null),type:'line',borderColor:gold,backgroundColor:'transparent',borderDash:[5,4],tension:.4,pointRadius:3},
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#5C5648',font:{size:11,family:'Outfit'},boxWidth:12,padding:14}}},scales:{x:axX,y:axY}}});
+
+  const ms=selMs;
+  mkC('ch-comp',{type:'doughnut',data:{labels:['Rec. Líquida','Deduções'],datasets:[{data:[sum(d.recLiq,ms),sum(d.deducoes,ms)],backgroundColor:[gold,'#1E1B15'],borderColor:'#fff',borderWidth:3,hoverOffset:10}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#5C5648',font:{size:11,family:'Outfit'},padding:16,boxWidth:12}}}}});
+
+  mkC('ch-mc',{type:'line',data:{labels:MESES,datasets:[
+    {label:'Meta %',data:MESES.map((_,i)=>d.recLiqOrc[i]>0?((d.lucroBrutoOrc[i]/d.recLiqOrc[i])*100):null),borderColor:'rgba(168,131,42,0.3)',borderDash:[4,4],pointRadius:2,tension:.3},
+    {label:'Real %',data:MESES.map((_,i)=>d.recLiq[i]>0?((d.lucroBruto[i]/d.recLiq[i])*100):null),borderColor:green,backgroundColor:greenA,fill:true,pointRadius:4,pointBackgroundColor:green,pointBorderColor:'#fff',pointBorderWidth:2,tension:.3},
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#5C5648',font:{size:10,family:'Outfit'},boxWidth:10,padding:10}}},scales:{x:axX,y:axYPct}}});
+
+  mkC('ch-cmv',{type:'bar',data:{labels:MESES,datasets:[{label:'CMV %',data:MESES.map((_,i)=>d.recLiq[i]>0?(d.cmv[i]/d.recLiq[i]*100):d.recLiqOrc[i]>0?(d.cmvOrc[i]/d.recLiqOrc[i]*100):null),backgroundColor:MESES.map((_,i)=>d.recLiq[i]>0?'rgba(184,50,50,0.65)':'rgba(184,50,50,0.2)'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:axX,y:axYPct}}});
+
+  if(curArea==='consolidado'){
+    mkC('ch-area',{type:'doughnut',data:{labels:['OPME','Hospitalar','Diagnóstica'],datasets:[{data:[sum(d.mixOpme,ms),sum(d.mixHosp,ms),sum(d.mixDiag,ms)],backgroundColor:[gold,green,blue],borderColor:'#fff',borderWidth:3,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{color:'#5C5648',font:{size:11,family:'Outfit'},padding:14,boxWidth:12}}}}});
+  }
+}
+
+// ══════════════════════════════════════════════════
+// DRE
+// ══════════════════════════════════════════════════
+function renderDRE(){
+  const ms=selMs,d=D[curArea];
+  const rl=sum(d.recLiq,ms)||1;
+
+  // THEAD — dark header
+  document.getElementById('dre-thead').innerHTML=`
+    <tr>
+      <th style="text-align:left;min-width:340px;position:sticky;left:0;z-index:3;background:#1E1B15;">Conta / Descrição</th>
+      ${ms.map(i=>`<th style="min-width:130px;text-align:center;">${MESES[i]}/26</th>`).join('')}
+      <th style="min-width:140px;text-align:center;background:#1A160F;color:rgba(201,168,76,0.8);">Acumulado R$</th>
+      <th style="min-width:140px;text-align:center;">Orçado Acum.</th>
+      <th style="min-width:90px;text-align:center;">Desv.%</th>
+      <th style="min-width:110px;text-align:center;">% Rec.Líq.</th>
+    </tr>
+    <tr>
+      <th style="text-align:left;position:sticky;left:0;z-index:3;background:#2C2821;font-size:9px;color:rgba(255,255,255,0.35);">Código / Nome</th>
+      ${ms.map(()=>`<th style="text-align:right;font-size:9px;color:rgba(255,255,255,0.3);">Realizado</th>`).join('')}
+      <th style="text-align:right;background:#1A160F;font-size:9px;color:rgba(201,168,76,0.5);">Real.</th>
+      <th style="text-align:right;font-size:9px;color:rgba(255,255,255,0.3);">Orç.</th>
+      <th style="text-align:right;font-size:9px;color:rgba(255,255,255,0.3);">%</th>
+      <th style="text-align:right;font-size:9px;color:rgba(255,255,255,0.3);">AV%</th>
+    </tr>
+  `;
+
+  const rows=[];
+  buildDRERows(TREE,rows,ms,d,rl,curArea);
+  document.getElementById('dre-tbody').innerHTML=rows.join('');
+}
+
+function buildDRERows(nodes,rows,ms,d,rl,area){
+  nodes.forEach(n=>{
+    if(!n)return;
+    const isAnalytic=n.lv===4;
+    if(isAnalytic&&!showAnalytic)return;
+
+    // Filter by area for lv4
+    if(isAnalytic&&area!=='consolidado'){
+      const aTag={opme:'OPME',hospitalar:'HOSPITALAR',diagnostica:'DIAGNÓSTICA'}[area]||'';
+      const lbl=n.label.toUpperCase();
+      const isTagged=lbl.includes('OPME')||lbl.includes('HOSPITALAR')||lbl.includes('DIAGNÓSTICA');
+      if(isTagged&&!lbl.includes(aTag))return;
+    }
+
+    let reaArr,orcArr;
+    if(n.key&&d[n.key]){reaArr=ms.map(i=>d[n.key][i]||0);orcArr=n.keyOrc&&d[n.keyOrc]?ms.map(i=>d[n.keyOrc][i]||0):ms.map(()=>0);}
+    else if(n.rea){reaArr=ms.map(i=>n.rea[i]||0);orcArr=n.orc?ms.map(i=>n.orc[i]||0):ms.map(()=>0);}
+    else{reaArr=ms.map(()=>0);orcArr=ms.map(()=>0);}
+
+    const totR=reaArr.reduce((a,b)=>a+b,0);
+    const totO=orcArr.reduce((a,b)=>a+b,0);
+    const desv=totO?((totR-totO)/Math.abs(totO)):null;
+    const avPct=rl?totR/rl:null;
+    const hasR=totR!==0;
+    const hasChildren=n.children&&n.children.length>0;
+    const exp=expState[n.id]!==false;
+
+    const lvC=`lv${n.lv}${n.highlight?' result-row':''}`;
+    const dCls=desv==null?'':(desv>=0?'desv-pos':'desv-neg');
+    const dTxt=desv==null?'—':(desv>=0?'▲ ':'▼ ')+Math.abs(desv*100).toFixed(1)+'%';
+
+    const tBtn=hasChildren
+      ?`<button class="toggle-btn" onclick="toggleNode('${n.id}')">${exp?'−':'+'}</button>`
+      :`<span class="spacer-icon"></span>`;
+
+    const codeSpan=n.code?`<span class="acc-code">${n.code}</span>`:'';
+
+    const cells=reaArr.map((rv,ci)=>{
+      const hasRv=rv!==0;
+      if(!hasRv)return`<td><span class="v-dash">—</span></td>`;
+      const neg=n.neg;
+      const val=fmtFull(rv);
+      const cls=neg?'v-neg':'';
+      return`<td class="${cls}">${neg&&rv?'−&nbsp;':''} ${val}</td>`;
+    }).join('');
+
+    const rlCell=n.highlight?`<td class="col-acum" style="font-weight:700;">${totR?`${n.neg?'−&nbsp;':''}${fmtFull(totR)}`:'—'}</td>`:
+      `<td class="col-acum">${totR?`${n.neg?'−&nbsp;':''}${fmtFull(totR)}`:'—'}</td>`;
+
+    const avCell=avPct!=null&&totR?`<div class="pct-wrap"><span class="pct-bar" style="width:${clamp(Math.abs(avPct)*90,1,90)}px"></span><span style="font-size:11px">${fmtPct(avPct)}</span></div>`:'<span class="v-dash">—</span>';
+
+    rows.push(`<tr class="${lvC}" id="dre-${n.id}">
+      <td style="position:sticky;left:0;z-index:1;">
+        ${tBtn}${codeSpan}<span>${n.label}</span>
+      </td>
+      ${cells}
+      ${rlCell}
+      <td class="col-acum-orc">${totO?fmtFull(totO):'—'}</td>
+      <td class="${dCls}">${dTxt}</td>
+      <td>${avCell}</td>
+    </tr>`);
+
+    if(hasChildren&&exp)buildDRERows(n.children.filter(Boolean),rows,ms,d,rl,area);
+  });
+}
+
+function toggleNode(id){expState[id]=expState[id]===false;renderDRE();}
+function expandAll(){collectIds(TREE).forEach(id=>expState[id]=true);renderDRE();}
+function collapseAll(){collectIds(TREE).forEach(id=>expState[id]=false);renderDRE();}
+function collectIds(nodes,out=[]){nodes.forEach(n=>{if(!n)return;out.push(n.id);if(n.children)collectIds(n.children,out);});return out;}
+function toggleAnalytics(btn){showAnalytic=!showAnalytic;btn.textContent=showAnalytic?'◉ Ocultar analíticas':'◎ Mostrar analíticas';renderDRE();}
+function exportDRE(){alert('Exportação disponível via integração com SheetJS. Contate CSN Gestão & Consultoria.');}
+
+// ══════════════════════════════════════════════════
+// RAZÃO
+// ══════════════════════════════════════════════════
+let rzFiltArr=[],rzPageN=150;
+
+function renderRz(){rzPageN=150;filterRz();}
+
+function filterRz(){
+  const busca=(document.getElementById('rz-busca').value||'').toLowerCase();
+  const conta=(document.getElementById('rz-conta').value||'').toLowerCase();
+  const mes=document.getElementById('rz-mes').value;
+  const div=(document.getElementById('rz-div').value||'').toLowerCase();
+  const dt1=document.getElementById('rz-dt1').value;
+  const dt2=document.getElementById('rz-dt2').value;
+  const d1=dt1?parseDate(dt1):null;
+  const d2=dt2?parseDate(dt2):null;
+
+  rzFiltArr=rzAll.filter(r=>{
+    if(busca&&![r.lanc,r.obs,r.contra,r.tipo].join(' ').toLowerCase().includes(busca))return false;
+    if(conta&&![r.conta,r.contaNome].join(' ').toLowerCase().includes(conta))return false;
+    if(mes!==''){const rm=parseInt(r.data.split('-')[1])-1;if(rm!==parseInt(mes))return false;}
+    if(div&&!r.div.toLowerCase().includes(div))return false;
+    if(d1||d2){const rd=parseDate(r.data);if(d1&&rd<d1)return false;if(d2&&rd>d2)return false;}
+    return true;
+  });
+
+  const total=rzFiltArr.reduce((a,r)=>a+r.valor,0);
+  document.getElementById('rz-count').textContent=`${rzFiltArr.length} lançamentos encontrados`;
+  document.getElementById('rz-total-val').innerHTML=`Total: <strong style="color:${total>=0?'var(--green)':'var(--red)'}">${total>=0?'+ ':'− '}${fmtCents(total)}</strong>`;
+  paintRz(rzPageN);
+}
+
+function paintRz(limit){
+  const rows=rzFiltArr.slice(0,limit);
+  const dc={opme:'dc-opme',diagnóstica:'dc-diag',hospitalar:'dc-hosp'};
+  document.getElementById('rz-tbody').innerHTML=rows.map(r=>{
+    const cls=dc[r.div.toLowerCase()]||'dc-gen';
+    const vCls=r.valor<0?'v-r':'v-g';
+    const vStr=(r.valor<0?'− ':'+ ')+fmtCents(r.valor);
+    return`<tr>
+      <td style="white-space:nowrap;">${fmtDateBR(r.data)}</td>
+      <td><span class="lanc-code">${r.lanc}</span><span class="lanc-type">${r.tipo}</span></td>
+      <td><span class="conta-code">${r.conta}</span><span class="conta-name">${r.contaNome}</span></td>
+      <td><div class="razao-obs">${r.obs}</div></td>
+      <td><div class="razao-contra">${r.contra}</div></td>
+      <td><span class="div-chip ${cls}">${r.div}</span></td>
+      <td class="r ${vCls}">${vStr}</td>
+    </tr>`;
+  }).join('');
+
+  const tot=rzFiltArr.length;
+  document.getElementById('rz-showing').textContent=`Exibindo ${Math.min(limit,tot)} de ${tot}`;
+  document.getElementById('btn-mais').style.display=limit<tot?'flex':'none';
+  document.getElementById('btn-tudo').style.display=limit<tot?'flex':'none';
+}
+
+function showMore(){rzPageN+=150;paintRz(rzPageN);}
+function showAll(){paintRz(rzFiltArr.length);}
+function clearRz(){
+  ['rz-busca','rz-conta','rz-dt1','rz-dt2'].forEach(id=>document.getElementById(id).value='');
+  ['rz-mes','rz-div'].forEach(id=>document.getElementById(id).value='');
+  filterRz();
+}
+
+// ══════════════════════════════════════════════════
+// FILE UPLOAD
+// ══════════════════════════════════════════════════
+function handleUpload(e){
+  const f=e.target.files[0];if(!f)return;
+  const name=f.name.toLowerCase();
+  const rd=new FileReader();
+  if(name.endsWith('.csv')){rd.onload=ev=>procCSV(ev.target.result,f.name);rd.readAsText(f,'utf-8');}
+  else{rd.onload=ev=>procXLSX(ev.target.result,f.name);rd.readAsArrayBuffer(f);}
+}
+function procXLSX(buf,name){
+  try{const wb=XLSX.read(buf,{type:'arraybuffer'});const ws=wb.Sheets[wb.SheetNames[0]];inject(XLSX.utils.sheet_to_json(ws,{defval:''}),name);}
+  catch(e){alert('Erro: '+e.message);}
+}
+function procCSV(txt,name){
+  try{const wb=XLSX.read(txt,{type:'string'});const ws=wb.Sheets[wb.SheetNames[0]];inject(XLSX.utils.sheet_to_json(ws,{defval:''}),name);}
+  catch(e){alert('Erro: '+e.message);}
+}
+function inject(rows,name){
+  const g=k=>rows[0]?Object.keys(rows[0]).find(x=>x.toLowerCase().includes(k.toLowerCase()))||'':k;
+  const mapped=rows.map(r=>({
+    data:String(r[g('data')]||r[g('date')]||'').replace(/\//g,'-')||'—',
+    lanc:String(r[g('lanc')]||r[g('lançamento')]||'—'),
+    tipo:String(r[g('tipo')]||'—'),
+    conta:String(r[g('conta')]||'—'),
+    contaNome:String(r[g('descr')]||r[g('nome')]||'—'),
+    obs:String(r[g('obs')]||r[g('obser')]||'—'),
+    contra:String(r[g('contra')]||'—'),
+    div:String(r[g('div')]||r[g('divis')]||'—'),
+    valor:parseFloat(String(r[g('valor')]||0).replace(',','.'))||0,
+  })).filter(r=>r.data!=='—'||r.conta!=='—');
+
+  rzAll=[...RZ_SAMPLE,...mapped];
+  const ok=document.getElementById('upload-ok');
+  ok.style.display='inline';ok.textContent=`✓ ${name} · ${mapped.length} linhas importadas`;
+  filterRz();
+}
+</script>
+</body>
+</html>
